@@ -5,5 +5,4 @@ plotly
 matplotlib
 seaborn
 scipy
-tensorflow
 scikit-learn
