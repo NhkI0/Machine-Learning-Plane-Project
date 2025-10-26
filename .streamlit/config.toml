@@ -1,32 +1,20 @@
-[theme]
-base = "dark"
+[server]
+fileWatcherType = "auto"
+port = 8501
+headless = false
+enableXsrfProtection = true
 
-# General color setup
-textColor = "#e2e8f0"
-primaryColor = "#615fff"
-backgroundColor = "#1d293d"
-secondaryBackgroundColor = "#0f172b"
+[browser]
+gatherUsageStats = false
+serverAddress = "localhost"
 
-# Widgets
-showWidgetBorder = true
-borderColor = "#314158"
+[runner]
+fastReruns = true
+magicEnabled = true
 
-# Dataframes
-dataframeHeaderBackgroundColor = "#1d293d"
+[client]
+showErrorDetails = true
+toolbarMode = "minimal"
 
-# Base text
-font = "Space Grotesk"
-baseFontWeight = 300
-baseFontSize = 14
-
-# Heading text
-headingFont = "Space Grotesk"
-headingFontWeights = [300, 400, 400, 300, 300, 300]
-headingFontSizes = ["2.5rem", "2rem", "1.75rem"]
-
-
-[[theme.fontFaces]]
-family = "Space Grotesk"
-style = "normal"
-weight = "300 700"
-url = "https://fonts.gstatic.com/s/spacegrotesk/v21/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2"
+[ui]
+hideTopBar = false
