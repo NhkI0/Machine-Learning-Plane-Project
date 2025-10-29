@@ -13,3 +13,11 @@
 11) Optimisation 
 12) Interpretation importantes des variables
 13) Sauvegarde modèle
+
+
+# Consignes pour DevOps
+
+1) Creer des taches"issues" dans GitHub avec une liste de petitesfonctionnalités à réaliser
+2) Récupérer le projet
+3) Ajouter un fichier "author.md" avec vos noms (chaque collaborateur ajoute son nom)
+4) Enfin, collaborer en appliquant le Workflow Github
