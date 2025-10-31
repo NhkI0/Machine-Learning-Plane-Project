@@ -2,6 +2,11 @@ import pandas as pd
 
 
 def normalize_duration(x: str) -> str | None:
+    """
+    Serialize duration to hh:mm format
+    :param x: -> ex: 8h 35m | 15h
+    :return:  -> ex: 08:35  | 15:00
+    """
     if pd.isna(x):
         return None
 
@@ -18,6 +23,15 @@ def normalize_duration(x: str) -> str | None:
 
 
 def clean_csv(csv: pd.DataFrame) -> pd.DataFrame:
+    """
+    Return a cleaned version of the csv.
+    Remove the NaN values.
+    Serialize Total_Stops to just set a number instead of text.
+    Serialize Duration as explained in normalize_duration().
+    Serialize Arrival_Time to remove the date of arrival when specified.
+    :param csv: -> pd.DataFrame
+    :return: -> pd.DataFrame
+    """
     # Keep only rows where Total_Stops is "non-stop" or starts with a digit
     csv = csv[csv["Total_Stops"].astype(str).str.match(r"^(?:\d|non-stop)", na=False)].copy()
 
@@ -34,6 +48,12 @@ def clean_csv(csv: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_and_save_csv(csv: pd.DataFrame, csv_path: str) -> None:
+    """
+    Invoke and save the cleaned version of the csv.
+    :param csv: -> pd.DataFrame
+    :param csv_path: -> str
+    :return:  -> None
+    """
     clean_csv(csv).to_csv(csv_path, index=False)
 
 
