@@ -5,7 +5,7 @@ def outliers_clean():
     "This script aim to clean ouliers from the dataset"
 
     # Loading dataset
-    df = pd.read_csv("/Users/alexfougeroux/Documents/ESAIP/ING4/Machine_learning/Machine-Learning-Plane-Project/script_clean_dataset/plane_ticket_price_modified.csv")
+    df = pd.read_csv("./plane_ticket_price_cleaned.csv")
 
     # Counting outliers values changed
     counter = 0
@@ -25,7 +25,7 @@ def fill_nul():
     "This script aims to fill empty values in the dataset"
 
     # Loading dataset
-    df = pd.read_csv("/Users/alexfougeroux/Documents/ESAIP/ING4/Machine_learning/Machine-Learning-Plane-Project/script_clean_dataset/plane_ticket_price_modified.csv")
+    df = pd.read_csv("./plane_ticket_price_cleaned.csv")
 
     # Filling empty number values
     for col in df.select_dtypes(include=['float64', 'int64']):
