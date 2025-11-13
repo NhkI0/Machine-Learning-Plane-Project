@@ -1,11 +1,11 @@
 import pandas as pd
 
 
-def normalize_duration(x: str) -> str | None:
+def normalize_duration(x: str) -> int:
     """
     Serialize duration to hh:mm format
     :param x: -> ex: 8h 35m | 15h
-    :return:  -> ex: 08:35  | 15:00
+    :return:  -> ex: 515    | 900
     """
     if pd.isna(x):
         return None
@@ -19,7 +19,7 @@ def normalize_duration(x: str) -> str | None:
     if "m" in x:
         minutes = int(x.split("h")[-1].replace("m", "").strip()) if "m" in x else 0
 
-    return f"{hours:02d}:{minutes:02d}"
+    return hours * 60 + minutes * 60
 
 
 def clean_csv(csv: pd.DataFrame) -> pd.DataFrame:
