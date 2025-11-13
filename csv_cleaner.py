@@ -20,7 +20,7 @@ def normalize_duration(x: str) -> int:
     if "m" in x:
         minutes = int(x.split("h")[-1].replace("m", "").strip()) if "m" in x else 0
 
-    return hours * 60 + minutes * 60
+    return hours * 60 + minutes
 
 
 def clean_csv(csv: pd.DataFrame) -> pd.DataFrame:
