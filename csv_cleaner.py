@@ -1,4 +1,5 @@
 import pandas as pd
+import datetime as dt
 
 
 def normalize_duration(x: str) -> int:
@@ -29,9 +30,11 @@ def clean_csv(csv: pd.DataFrame) -> pd.DataFrame:
     Serialize Total_Stops to just set a number instead of text.
     Serialize Duration as explained in normalize_duration().
     Serialize Arrival_Time to remove the date of arrival when specified.
+    Split date and time columns into separate components.
     :param csv: -> pd.DataFrame
     :return: -> pd.DataFrame
     """
+
     # Keep only rows where Total_Stops is "non-stop" or starts with a digit
     csv = csv[csv["Total_Stops"].astype(str).str.match(r"^(?:\d|non-stop)", na=False)].copy()
 
@@ -44,6 +47,18 @@ def clean_csv(csv: pd.DataFrame) -> pd.DataFrame:
     csv["Arrival_Time"] = csv["Arrival_Time"].apply(
         lambda x: x.split(" ")[0] if " " in x else x
     )
+
+    csv['Journey_day'] = pd.to_datetime(csv['Date_of_Journey'], dayfirst=True).dt.day
+    csv['Journey_month'] = pd.to_datetime(csv['Date_of_Journey'], dayfirst=True).dt.month
+
+    csv['Departure_hour'] = pd.to_datetime(csv['Dep_Time'], format='%H:%M').dt.hour
+    csv['Departure_min'] = pd.to_datetime(csv['Dep_Time'], format='%H:%M').dt.minute
+
+    csv['Arrival_hour'] = pd.to_datetime(csv['Arrival_Time'], format='%H:%M').dt.hour
+    csv['Arrival_min'] = pd.to_datetime(csv['Arrival_Time'], format='%H:%M').dt.minute
+
+    csv = csv.drop(['Date_of_Journey', 'Dep_Time', 'Arrival_Time'], axis=1)
+
     return csv
 
 
