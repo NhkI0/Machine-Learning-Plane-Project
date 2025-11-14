@@ -1,8 +1,7 @@
 import pandas as pd
-import datetime as dt
 
 
-def normalize_duration(x: str) -> int:
+def normalize_duration(x: str) -> int | None:
     """
     Serialize duration to hh:mm format
     :param x: -> ex: 8h 35m | 15h
@@ -60,6 +59,22 @@ def clean_csv(csv: pd.DataFrame) -> pd.DataFrame:
     csv = csv.drop(['Date_of_Journey', 'Dep_Time', 'Arrival_Time'], axis=1)
 
     return csv
+
+
+def remove_duplicates(csv: pd.DataFrame) -> pd.DataFrame:
+    """
+    Remove duplicate rows from the DataFrame.
+    :param csv: -> pd.DataFrame
+    :return: -> pd.DataFrame without duplicates
+    """
+    initial_rows = len(csv)
+    csv_clean = csv.drop_duplicates()
+    removed_count = initial_rows - len(csv_clean)
+
+    print(f"Removed {removed_count} duplicate rows")
+    print(f"Total rows after duplicate removal: {len(csv_clean)}")
+
+    return csv_clean
 
 
 def clean_and_save_csv(csv: pd.DataFrame, csv_path: str) -> None:
