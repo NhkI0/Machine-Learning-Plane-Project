@@ -39,7 +39,7 @@ def one():
 
     # Afficher Head
     st.subheader("head()", divider=get_next_color())
-    st.dataframe(df.head(), width='stretch', hide_index=True)
+    st.dataframe(df.head(), hide_index=True)
 
 
 def two():
@@ -73,7 +73,7 @@ def two():
         st.write(f"- **{col}**: {df[col].dtype}")
 
     st.subheader("describe()", divider=get_next_color())
-    st.dataframe(df.describe(), use_container_width=False)
+    st.dataframe(df.describe())
 
 
 def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame = None) -> pd.DataFrame | None:
@@ -149,20 +149,20 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
 
     # Résumé des valeurs manquantes
     missing_summary = pd.DataFrame({
-        'Colonne': data_df.columns,
-        'Valeurs manquantes': missing_values.values,
-        'Pourcentage (%)': missing_percentage.values
+        'Colonne': data_df.columns.astype(str),
+        'Valeurs manquantes': missing_values.values.astype(int),
+        'Pourcentage (%)': missing_percentage.values.astype(float)
     })
     missing_summary = missing_summary[missing_summary['Valeurs manquantes'] > 0].sort_values('Valeurs manquantes',
                                                                                              ascending=False)
 
     if len(missing_summary) > 0:
         st.warning(f"⚠️ {len(missing_summary)} colonne(s) contiennent des valeurs manquantes")
-        st.dataframe(missing_summary, use_container_width=True, hide_index=True)
+        st.dataframe(missing_summary, hide_index=True)
 
         # Graphique des valeurs manquantes avec style moderne
         fig, ax = plt.subplots(figsize=(10, 5))
-        cmap = plt.cm.get_cmap('RdYlGn_r')
+        cmap = plt.colormaps['RdYlGn_r']
         colors = cmap(missing_summary['Pourcentage (%)'] / 100)
         missing_summary.plot(x='Colonne', y='Pourcentage (%)', kind='bar', ax=ax, color=colors, legend=False)
         ax.set_title('Pourcentage de valeurs manquantes par colonne', fontsize=14, fontweight='bold', pad=20)
@@ -205,7 +205,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
 
         with st.expander("Voir des exemples de lignes dupliquées (max 10)"):
             duplicates = data_df[data_df.duplicated(keep=False)].sort_values(by=data_df.columns.tolist()).head(10)
-            st.dataframe(duplicates, use_container_width=True)
+            st.dataframe(duplicates)
     else:
         st.success("✅ Aucune ligne dupliquée détectée dans le dataset")
 
@@ -254,7 +254,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
             st.write("**Statistiques descriptives:**")
             stats_df = data_df['Price'].describe().to_frame()
             stats_df.columns = ['Valeur']
-            st.dataframe(stats_df, use_container_width=True)
+            st.dataframe(stats_df)
 
         with stat_col2:
             st.write("**Analyse IQR:**")
@@ -263,7 +263,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
                              'IQR', 'Limite inférieure', 'Limite supérieure'],
                 'Valeur': [f"{q1:.2f}", f"{q3:.2f}", f"{iqr:.2f}", f"{lower_bound:.2f}", f"{upper_bound:.2f}"]
             })
-            st.dataframe(iqr_stats, use_container_width=True, hide_index=True)
+            st.dataframe(iqr_stats, hide_index=True)
 
     # Visualisations avec style moderne (outside container to ensure visibility)
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -311,7 +311,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
 
     if n_outliers > 0:
         with st.expander(f"🔍 Voir les {n_outliers} outliers détectés"):
-            st.dataframe(outliers, use_container_width=True)
+            st.dataframe(outliers)
 
 
 def run():
