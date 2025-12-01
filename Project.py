@@ -14,7 +14,7 @@ data_path = os.path.join("./plane_ticket_price_original.csv")
 df = pd.read_csv(data_path, delimiter=',')
 
 # Liste de couleurs pour cycler
-DIVIDER_COLORS = ["blue", "green", "orange", "red", "violet", "yellow", "gray"]
+DIVIDER_COLORS = ["blue", "green", "orange", "red", "violet", "yellow"]
 color_index = 0
 
 
@@ -131,7 +131,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
 
         st.divider()
     # === VALEURS MANQUANTES ===
-    st.subheader("🔍 Valeurs manquantes", divider=get_next_color())
+    st.subheader(":mag: Valeurs manquantes", divider=get_next_color())
 
     missing_values = data_df.isnull().sum()
     missing_percentage = (data_df.isnull().sum() / len(data_df)) * 100
@@ -158,7 +158,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
                                                                                              ascending=False)
 
     if len(missing_summary) > 0:
-        st.warning(f"⚠️ {len(missing_summary)} colonne(s) contiennent des valeurs manquantes")
+        st.warning(f":warning: {len(missing_summary)} colonne(s) contiennent des valeurs manquantes")
         st.dataframe(missing_summary, hide_index=True)
 
         # Graphique des valeurs manquantes avec style moderne
@@ -176,12 +176,12 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
         plt.tight_layout()
         st.pyplot(fig)
     else:
-        st.success("✅ Aucune valeur manquante détectée dans le dataset")
+        st.success(":white_check_mark: Aucune valeur manquante détectée dans le dataset")
 
     st.divider()
 
     # === VALEURS DUPLIQUÉES ===
-    st.subheader("🔁 Valeurs dupliquées", divider=get_next_color())
+    st.subheader(":repeat: Valeurs dupliquées", divider=get_next_color())
 
     total_rows = len(data_df)
     duplicate_rows = data_df.duplicated().sum()
@@ -202,18 +202,18 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
         st.metric("Pourcentage dupliqué", f"{duplicate_percentage:.2f}%")
 
     if duplicate_rows > 0:
-        st.warning(f"⚠️ {duplicate_rows} ligne(s) dupliquée(s) détectée(s)")
+        st.warning(f":warning: {duplicate_rows} ligne(s) dupliquée(s) détectée(s)")
 
         with st.expander("Voir des exemples de lignes dupliquées (max 10)"):
             duplicates = data_df[data_df.duplicated(keep=False)].sort_values(by=data_df.columns.tolist()).head(10)
             st.dataframe(duplicates)
     else:
-        st.success("✅ Aucune ligne dupliquée détectée dans le dataset")
+        st.success(":white_check_mark: Aucune ligne dupliquée détectée dans le dataset")
 
     st.divider()
 
     # === VALEURS ABERRANTES ===
-    st.subheader("📊 Analyse des valeurs aberrantes (Price)", divider=get_next_color())
+    st.subheader(":bar_chart: Analyse des valeurs aberrantes (Price)", divider=get_next_color())
 
     # Calcul des quartiles et de l'IQR
     q1 = data_df['Price'].quantile(0.25)
@@ -248,7 +248,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
             st.metric("Prix max", f"₹{data_df['Price'].max():.2f}")
 
     # Statistiques dans un expander
-    with st.expander("📈 Statistiques détaillées"):
+    with st.expander(":chart_with_upwards_trend: Statistiques détaillées"):
         stat_col1, stat_col2 = st.columns(2)
 
         with stat_col1:
@@ -267,73 +267,87 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
             st.dataframe(iqr_stats, hide_index=True)
 
     # Visualisations avec style moderne (outside container to ensure visibility)
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-    fig.patch.set_facecolor('white')
+    col1, col2 = st.columns(2)
 
-    # Boxplot avec style moderne
-    axes[0].boxplot(data_df['Price'], vert=True, patch_artist=True,
-                    boxprops=dict(facecolor='#1c83e1', alpha=0.7),
-                    medianprops=dict(color='#ff5252', linewidth=2),
-                    whiskerprops=dict(color='#1c83e1', linewidth=1.5),
-                    capprops=dict(color='#1c83e1', linewidth=1.5),
-                    flierprops=dict(marker='o', markerfacecolor='#ff5252', markersize=5, alpha=0.5))
-    axes[0].set_title('Boxplot des Prix', fontsize=14, fontweight='bold', pad=15)
-    axes[0].set_ylabel('Prix (₹)', fontsize=11)
-    axes[0].axhline(y=lower_bound, color='#ff9800', linestyle='--', linewidth=2, label='Limite inférieure', alpha=0.8)
-    axes[0].axhline(y=upper_bound, color='#ff9800', linestyle='--', linewidth=2, label='Limite supérieure', alpha=0.8)
-    axes[0].legend(loc='best', framealpha=0.9)
-    axes[0].spines['top'].set_visible(False)
-    axes[0].spines['right'].set_visible(False)
-    axes[0].grid(axis='y', alpha=0.3, linestyle='--')
+    # === Colonne 1: Boxplot ===
+    with col1:
+        fig, ax = plt.subplots(figsize=(8, 6))
+        fig.patch.set_facecolor('white')
 
-    # Histogramme avec style moderne
-    n, bins, patches = axes[1].hist(data_df['Price'], bins=50, edgecolor='white', linewidth=0.5, alpha=0.9)
+        ax.boxplot(data_df['Price'], vert=True, patch_artist=True,
+                   boxprops=dict(facecolor='#1c83e1', alpha=0.7),
+                   medianprops=dict(color='#ff5252', linewidth=2),
+                   whiskerprops=dict(color='#1c83e1', linewidth=1.5),
+                   capprops=dict(color='#1c83e1', linewidth=1.5),
+                   flierprops=dict(marker='o', markerfacecolor='#ff5252', markersize=5, alpha=0.5))
 
-    # Colorer les barres selon qu'elles contiennent des outliers
-    for i, patch in enumerate(patches):
-        bin_center = (bins[i] + bins[i + 1]) / 2
-        if bin_center < lower_bound or bin_center > upper_bound:
-            patch.set_facecolor('#ff5252')
-        else:
-            patch.set_facecolor('#1c83e1')
+        ax.set_title('Boxplot des Prix', fontsize=14, fontweight='bold', pad=15)
+        ax.set_ylabel('Prix (₹)', fontsize=11)
+        ax.axhline(y=lower_bound, color='#ff9800', linestyle='--', linewidth=2, label='Limite inférieure', alpha=0.8)
+        ax.axhline(y=upper_bound, color='#ff9800', linestyle='--', linewidth=2, label='Limite supérieure', alpha=0.8)
+        ax.legend(loc='best', framealpha=0.9)
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.grid(axis='y', alpha=0.3, linestyle='--')
 
-    axes[1].axvline(x=lower_bound, color='#ff9800', linestyle='--', linewidth=2, label='Limite inférieure', alpha=0.8)
-    axes[1].axvline(x=upper_bound, color='#ff9800', linestyle='--', linewidth=2, label='Limite supérieure', alpha=0.8)
-    axes[1].axvline(df['Price'].mean(), color='red', linestyle='--', linewidth=2,
-                    label=f'Moyenne: {df["Price"].mean():.0f}')
-    axes[1].axvline(df['Price'].median(), color='green', linestyle='--', linewidth=2,
-                    label=f'Médiane: {df["Price"].median():.0f}')
-    axes[1].set_title('Distribution des Prix', fontsize=14, fontweight='bold', pad=15)
+        plt.tight_layout()
+        st.pyplot(fig)
+        plt.close()
 
-    axes[1].set_xlabel('Prix (₹)', fontsize=11)
-    axes[1].set_ylabel('Fréquence', fontsize=11)
-    axes[1].legend(loc='best', framealpha=0.9)
-    axes[1].spines['top'].set_visible(False)
-    axes[1].spines['right'].set_visible(False)
-    axes[1].grid(axis='y', alpha=0.3, linestyle='--')
+    # === Colonne 2: Histogramme ===
+    with col2:
+        fig, ax = plt.subplots(figsize=(8, 6))
+        fig.patch.set_facecolor('white')
 
-    plt.tight_layout()
-    st.pyplot(fig)
+        n, bins, patches = ax.hist(data_df['Price'], bins=50, edgecolor='white', linewidth=0.5, alpha=0.9)
+
+        # Colorer les barres selon qu'elles contiennent des outliers
+        for i, patch in enumerate(patches):
+            bin_center = (bins[i] + bins[i + 1]) / 2
+            if bin_center < lower_bound or bin_center > upper_bound:
+                patch.set_facecolor('#ff5252')
+            else:
+                patch.set_facecolor('#1c83e1')
+
+        ax.axvline(x=lower_bound, color='#ff9800', linestyle='--', linewidth=2, label='Limite inférieure', alpha=0.8)
+        ax.axvline(x=upper_bound, color='#ff9800', linestyle='--', linewidth=2, label='Limite supérieure', alpha=0.8)
+        ax.axvline(df['Price'].mean(), color='red', linestyle='--', linewidth=2,
+                   label=f'Moyenne: {df["Price"].mean():.0f}')
+        ax.axvline(df['Price'].median(), color='green', linestyle='--', linewidth=2,
+                   label=f'Médiane: {df["Price"].median():.0f}')
+
+        ax.set_title('Distribution des Prix', fontsize=14, fontweight='bold', pad=15)
+        ax.set_xlabel('Prix (₹)', fontsize=11)
+        ax.set_ylabel('Fréquence', fontsize=11)
+        ax.legend(loc='best', framealpha=0.9)
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.grid(axis='y', alpha=0.3, linestyle='--')
+
+        plt.tight_layout()
+        st.pyplot(fig)
+        plt.close()
 
     if n_outliers > 0:
-        with st.expander(f"🔍 Voir les {n_outliers} outliers détectés"):
+        with st.expander(f":mag: Voir les {n_outliers} outliers détectés"):
             st.dataframe(outliers)
 
 
-def four():
+# noinspection DuplicatedCode
+def four(data_df: pd.DataFrame):
+    st.write("## 4. Distribution des prix selon différents critères")
+    st.subheader(":seat: Compagnies :", divider=get_next_color())
     sns.set_theme(style="white")
 
     fig, ax = plt.subplots(figsize=(14, 6))
 
-    airline_order = df.groupby('Airline')['Price'].median().sort_values().index
+    airline_order = data_df.groupby('Airline')['Price'].median().sort_values().index
 
     sns.violinplot(
-        data=df,
+        data=data_df,
         x='Airline',
         y='Price',
         order=airline_order,
         palette='Set2',
-        inner='box',  # Montre un mini boxplot à l'intérieur
+        inner='box',
         linewidth=1,
         ax=ax
     )
@@ -349,20 +363,145 @@ def four():
 
     plt.tight_layout()
     st.pyplot(fig)
+    plt.close()
 
-    stats = df.groupby('Airline')['Price'].describe().round(2)
+    stats = data_df.groupby('Airline')['Price'].describe().round(2)
 
-    # Quick summary metrics
     col1, col2, col3 = st.columns(3)
-    col1.metric("Compagnie la moins chère", stats['mean'].idxmin(), f"₹{stats['mean'].min():,.0f}")
-    col2.metric("Compagnie la plus chère", stats['mean'].idxmax(), f"₹{stats['mean'].max():,.0f}")
+    col1.metric("Compagnie la plus chère", f"{stats['mean'].idxmax()} — ₹{stats['mean'].max():,.0f}")
+    col2.metric("Compagnie la moins chère", f"{stats['mean'].idxmin()} — ₹{stats['mean'].min():,.0f}")
     col3.metric("Écart de prix moyen", f"₹{stats['mean'].max() - stats['mean'].min():,.0f}")
 
+    stats_display = stats.rename(columns={
+        'count': 'Nb vols',
+        'mean': 'Moyenne',
+        'std': 'Écart-type',
+        'min': 'Min',
+        '25%': 'Q1',
+        '50%': 'Médiane',
+        '75%': 'Q3',
+        'max': 'Max'
+    }).sort_values('Moyenne', ascending=True)
+
     st.dataframe(
-        stats.sort_values('mean').style
-        .background_gradient(cmap='RdYlGn_r', subset=['mean'])
+        stats_display.style
+        .background_gradient(cmap='RdYlGn_r', subset=['Moyenne'])
         .format('{:,.0f}'),
-        use_container_width=True
+        use_container_width=True,
+        height=(len(stats_display) + 1) * 35 + 2
+    )
+
+    st.subheader(":city_sunset: Villes :", divider=get_next_color())
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader(":round_pushpin: Par ville de départ")
+
+        source_stats = data_df.groupby('Source')['Price'].agg(['median', 'mean', 'std'])
+
+        m1, m2 = st.columns(2)
+        m1.metric("Moins chère", source_stats['median'].idxmin())
+        m2.metric("Plus chère", source_stats['median'].idxmax())
+
+        fig, ax = plt.subplots(figsize=(8, 5))
+        source_order = source_stats['median'].sort_values().index
+        sns.boxplot(data=data_df, x='Source', y='Price', order=source_order, palette='Set3', ax=ax)
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+        ax.set_xlabel('')
+        ax.set_ylabel('Prix (INR)', fontsize=11, color='#555')
+        ax.spines[['top', 'right', 'left']].set_visible(False)
+        ax.tick_params(left=False)
+        ax.yaxis.grid(True, alpha=0.3)
+        ax.set_axisbelow(True)
+        plt.tight_layout()
+        st.pyplot(fig)
+        plt.close()
+
+        source_stats_display = source_stats.rename(columns={
+            'median': 'Médiane',
+            'mean': 'Moyenne',
+            'std': 'Écart-type',
+        }).sort_values('Moyenne', ascending=True)
+
+        st.dataframe(
+            source_stats_display.style
+            .background_gradient(cmap='RdYlGn_r', subset=['Moyenne'])
+            .format('{:,.0f}'),
+            use_container_width=True,
+            height=(len(source_stats_display) + 1) * 35 + 2
+        )
+
+    with col2:
+        st.subheader(":dart: Par destination")
+
+        dest_stats = data_df.groupby('Destination')['Price'].agg(['median', 'mean', 'std'])
+
+        m1, m2 = st.columns(2)
+        m1.metric("Moins chère", dest_stats['median'].idxmin())
+        m2.metric("Plus chère", dest_stats['median'].idxmax())
+
+        fig, ax = plt.subplots(figsize=(8, 5))
+        dest_order = dest_stats['median'].sort_values().index
+        sns.boxplot(data=data_df, x='Destination', y='Price', order=dest_order, palette='Set3', ax=ax)
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+        ax.set_xlabel('')
+        ax.set_ylabel('Prix (INR)', fontsize=11, color='#555')
+        ax.spines[['top', 'right', 'left']].set_visible(False)
+        ax.tick_params(left=False)
+        ax.yaxis.grid(True, alpha=0.3)
+        ax.set_axisbelow(True)
+        plt.tight_layout()
+        st.pyplot(fig)
+        plt.close()
+
+        dest_stats_display = dest_stats.rename(columns={
+            'median': 'Médiane',
+            'mean': 'Moyenne',
+            'std': 'Écart-type',
+        }).sort_values('Moyenne', ascending=True)
+
+        st.dataframe(
+            dest_stats_display.style
+            .background_gradient(cmap='RdYlGn_r', subset=['Moyenne'])
+            .format('{:,.0f}'),
+            use_container_width=True,
+            height=(len(dest_stats_display) + 1) * 35 + 2
+        )
+
+    st.subheader(":flight_arrival: Escales :", divider=get_next_color())
+
+    # Nettoyer les valeurs nulles pour Total_Stops
+    df_stops = data_df.dropna(subset=['Total_Stops'])
+
+    # Compute statistics
+    stops_stats = df_stops.groupby('Total_Stops')['Price'].agg(['median', 'mean', 'std']).round(2)
+
+    fig, ax = plt.subplots(figsize=(14, 6))
+    sns.boxplot(data=df_stops, x='Total_Stops', y='Price', palette='viridis', ax=ax)
+    ax.set_xlabel('Nombre d\'escales', fontsize=11)
+    ax.set_ylabel('Prix (INR)', fontsize=11, color='#555')
+    ax.set_title('Boxplot des prix par nombre d\'escales', fontsize=14, fontweight='bold', pad=15)
+    ax.spines[['top', 'right', 'left']].set_visible(False)
+    ax.tick_params(left=False)
+    ax.yaxis.grid(True, alpha=0.3)
+    ax.set_axisbelow(True)
+    plt.tight_layout()
+    st.pyplot(fig)
+    plt.close()
+
+    # Rename and display
+    stops_stats_display = stops_stats.rename(columns={
+        'median': 'Médiane',
+        'mean': 'Moyenne',
+        'std': 'Écart-type',
+    }).sort_values('Moyenne', ascending=True)
+
+    st.dataframe(
+        stops_stats_display.style
+        .background_gradient(cmap='RdYlGn_r', subset=['Moyenne'])
+        .format('{:,.0f}'),
+        use_container_width=True,
+        height=(len(stops_stats_display) + 1) * 35 + 2
     )
 
 
@@ -429,8 +568,6 @@ def run():
             label_visibility="collapsed"
         )
 
-    # st.divider()
-
     # Display selected analysis
     with st.spinner("Merci de patienter...", show_time=True):
         if data_view == "Données originales":
@@ -439,7 +576,8 @@ def run():
             three(cleaned_df, clean=True, original_df=df)
 
     st.divider()
-    four()
+
+    four(cleaned_df)
 
 
 if __name__ == "__main__":
