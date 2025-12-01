@@ -4,6 +4,7 @@ from io import StringIO
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 import os
 
 import process_CSV
@@ -290,7 +291,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
 
     # Colorer les barres selon qu'elles contiennent des outliers
     for i, patch in enumerate(patches):
-        bin_center = (bins[i] + bins[i+1]) / 2
+        bin_center = (bins[i] + bins[i + 1]) / 2
         if bin_center < lower_bound or bin_center > upper_bound:
             patch.set_facecolor('#ff5252')
         else:
@@ -298,7 +299,12 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
 
     axes[1].axvline(x=lower_bound, color='#ff9800', linestyle='--', linewidth=2, label='Limite inférieure', alpha=0.8)
     axes[1].axvline(x=upper_bound, color='#ff9800', linestyle='--', linewidth=2, label='Limite supérieure', alpha=0.8)
+    axes[1].axvline(df['Price'].mean(), color='red', linestyle='--', linewidth=2,
+                    label=f'Moyenne: {df["Price"].mean():.0f}')
+    axes[1].axvline(df['Price'].median(), color='green', linestyle='--', linewidth=2,
+                    label=f'Médiane: {df["Price"].median():.0f}')
     axes[1].set_title('Distribution des Prix', fontsize=14, fontweight='bold', pad=15)
+
     axes[1].set_xlabel('Prix (₹)', fontsize=11)
     axes[1].set_ylabel('Fréquence', fontsize=11)
     axes[1].legend(loc='best', framealpha=0.9)
@@ -314,11 +320,57 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
             st.dataframe(outliers)
 
 
+def four():
+    sns.set_theme(style="white")
+
+    fig, ax = plt.subplots(figsize=(14, 6))
+
+    airline_order = df.groupby('Airline')['Price'].median().sort_values().index
+
+    sns.violinplot(
+        data=df,
+        x='Airline',
+        y='Price',
+        order=airline_order,
+        palette='Set2',
+        inner='box',  # Montre un mini boxplot à l'intérieur
+        linewidth=1,
+        ax=ax
+    )
+
+    ax.set_title('Distribution des prix par compagnie aérienne', fontsize=14, fontweight='bold', pad=20)
+    ax.set_xlabel('')
+    ax.set_ylabel('Prix (INR)', fontsize=11, color='#555')
+    ax.spines[['top', 'right', 'left']].set_visible(False)
+    ax.tick_params(left=False)
+    ax.yaxis.grid(True, alpha=0.25, linestyle='-')
+    ax.set_axisbelow(True)
+    plt.xticks(rotation=45, ha='right', fontsize=10)
+
+    plt.tight_layout()
+    st.pyplot(fig)
+
+    stats = df.groupby('Airline')['Price'].describe().round(2)
+
+    # Quick summary metrics
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Compagnie la moins chère", stats['mean'].idxmin(), f"₹{stats['mean'].min():,.0f}")
+    col2.metric("Compagnie la plus chère", stats['mean'].idxmax(), f"₹{stats['mean'].max():,.0f}")
+    col3.metric("Écart de prix moyen", f"₹{stats['mean'].max() - stats['mean'].min():,.0f}")
+
+    st.dataframe(
+        stats.sort_values('mean').style
+        .background_gradient(cmap='RdYlGn_r', subset=['mean'])
+        .format('{:,.0f}'),
+        use_container_width=True
+    )
+
+
 def run():
     st.set_page_config(
         page_title="Plane ticket price dashboard",
         page_icon=":flight_departure:",
-        # layout="wide",
+        layout="wide",
     )
 
     # Custom CSS
@@ -385,6 +437,9 @@ def run():
             three(df, clean=False)
         else:
             three(cleaned_df, clean=True, original_df=df)
+
+    st.divider()
+    four()
 
 
 if __name__ == "__main__":
