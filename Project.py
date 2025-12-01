@@ -712,7 +712,7 @@ def six(X_scaled: np.ndarray, y: pd.Series, feature_cols: list, encoded_cols: li
 
     st.divider()
 
-    st.subheader(":robot_face: Entraînement du modèle", divider=get_next_color())
+    st.subheader(":nut_and_bolt: Entraînement du modèle", divider=get_next_color())
 
     # Entraînement avec spinner
     with st.spinner("Entraînement du modèle en cours..."):
