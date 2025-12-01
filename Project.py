@@ -193,7 +193,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         plt.xticks(rotation=45, ha='right')
         plt.tight_layout()
-        st.pyplot(fig, use_container_width=True)
+        st.pyplot(fig, width='content')
         plt.close()
     else:
         st.success(":white_check_mark: Aucune valeur manquante détectée dans le dataset")
@@ -310,7 +310,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
         ax.grid(axis='y', alpha=0.3, linestyle='--')
 
         plt.tight_layout()
-        st.pyplot(fig, use_container_width=True)
+        st.pyplot(fig, width='content')
         plt.close()
 
     # === Colonne 2: Histogramme ===
@@ -343,7 +343,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
         ax.grid(axis='y', alpha=0.3, linestyle='--')
 
         plt.tight_layout()
-        st.pyplot(fig, use_container_width=True)
+        st.pyplot(fig, width='content')
         plt.close()
 
     if n_outliers > 0:
@@ -382,7 +382,7 @@ def four(data_df: pd.DataFrame):
     plt.xticks(rotation=45, ha='right', fontsize=10)
 
     plt.tight_layout()
-    st.pyplot(fig, use_container_width=True)
+    st.pyplot(fig, width='content')
     plt.close()
 
     stats = data_df.groupby('Airline')['Price'].describe().round(2)
@@ -407,7 +407,7 @@ def four(data_df: pd.DataFrame):
         stats_display.style
         .background_gradient(cmap='RdYlGn_r', subset=['Moyenne'])
         .format('{:,.0f}'),
-        use_container_width=True,
+        width='content',
         height=(len(stats_display) + 1) * 35 + 2
     )
 
@@ -434,7 +434,7 @@ def four(data_df: pd.DataFrame):
         ax.yaxis.grid(True, alpha=0.3)
         ax.set_axisbelow(True)
         plt.tight_layout()
-        st.pyplot(fig, use_container_width=True)
+        st.pyplot(fig, width='content')
         plt.close()
 
         source_stats_display = source_stats.rename(columns={
@@ -447,7 +447,7 @@ def four(data_df: pd.DataFrame):
             source_stats_display.style
             .background_gradient(cmap='RdYlGn_r', subset=['Moyenne'])
             .format('{:,.0f}'),
-            use_container_width=True,
+            width='content',
             height=(len(source_stats_display) + 1) * 35 + 2
         )
 
@@ -471,7 +471,7 @@ def four(data_df: pd.DataFrame):
         ax.yaxis.grid(True, alpha=0.3)
         ax.set_axisbelow(True)
         plt.tight_layout()
-        st.pyplot(fig, use_container_width=True)
+        st.pyplot(fig, width='content')
         plt.close()
 
         dest_stats_display = dest_stats.rename(columns={
@@ -484,7 +484,7 @@ def four(data_df: pd.DataFrame):
             dest_stats_display.style
             .background_gradient(cmap='RdYlGn_r', subset=['Moyenne'])
             .format('{:,.0f}'),
-            use_container_width=True,
+            width='content',
             height=(len(dest_stats_display) + 1) * 35 + 2
         )
 
@@ -506,7 +506,7 @@ def four(data_df: pd.DataFrame):
     ax.yaxis.grid(True, alpha=0.3)
     ax.set_axisbelow(True)
     plt.tight_layout()
-    st.pyplot(fig, use_container_width=True)
+    st.pyplot(fig, width='content')
     plt.close()
 
     # Rename and display
@@ -520,7 +520,7 @@ def four(data_df: pd.DataFrame):
         stops_stats_display.style
         .background_gradient(cmap='RdYlGn_r', subset=['Moyenne'])
         .format('{:,.0f}'),
-        use_container_width=True,
+        width='content',
         height=(len(stops_stats_display) + 1) * 35 + 2
     )
 
@@ -538,7 +538,7 @@ def four(data_df: pd.DataFrame):
         ax.spines[['top', 'right']].set_visible(False)
         ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        st.pyplot(fig, use_container_width=True)
+        st.pyplot(fig, width='content')
         plt.close()
 
     with col2:
@@ -548,7 +548,7 @@ def four(data_df: pd.DataFrame):
         duration_stats.columns = ['Nb vols', 'Prix moyen', 'Prix médian']
         st.dataframe(
             duration_stats.style.background_gradient(cmap='Blues', subset=['Prix moyen']).format('{:,.0f}'),
-            use_container_width=True
+            width='content'
         )
 
         # Correlation
@@ -596,7 +596,7 @@ def five(data_df: pandas.DataFrame):
                 'Heure de départ'
             ]
         })
-        st.dataframe(num_features, hide_index=True, use_container_width=True)
+        st.dataframe(num_features, hide_index=True, width='content')
 
     with col2:
         st.markdown("##### :abc: Features catégorielles (One-Hot)")
@@ -612,7 +612,7 @@ def five(data_df: pandas.DataFrame):
             ]
         })
         cat_summary['% du total'] = (cat_summary['Colonnes créées'] / len(encoded_cols) * 100).round(1)
-        st.dataframe(cat_summary, hide_index=True, use_container_width=True)
+        st.dataframe(cat_summary, hide_index=True, width='content')
 
     # Expander with full feature list
     with st.expander(f":mag: Voir toutes les {len(encoded_cols)} features encodées"):
@@ -656,7 +656,7 @@ def five(data_df: pandas.DataFrame):
                 f"{X.max().max():.2f}"
             ]
         })
-        st.dataframe(before_stats, hide_index=True, use_container_width=True)
+        st.dataframe(before_stats, hide_index=True, width='content')
 
     with col2:
         st.markdown("##### Après normalisation")
@@ -669,7 +669,7 @@ def five(data_df: pandas.DataFrame):
                 f"{X_scaled.max():.2f}"
             ]
         })
-        st.dataframe(after_stats, hide_index=True, use_container_width=True)
+        st.dataframe(after_stats, hide_index=True, width='content')
 
     st.success("""
     **StandardScaler** transforme chaque feature pour avoir:
@@ -775,7 +775,7 @@ def six(X_scaled: np.ndarray, y: pd.Series, feature_cols: list, encoded_cols: li
         ax.spines[['top', 'right']].set_visible(False)
         ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        st.pyplot(fig, use_container_width=True)
+        st.pyplot(fig, width='content')
         plt.close()
 
     with col2:
@@ -793,7 +793,7 @@ def six(X_scaled: np.ndarray, y: pd.Series, feature_cols: list, encoded_cols: li
         ax.spines[['top', 'right']].set_visible(False)
         ax.grid(True, alpha=0.3, axis='y')
         plt.tight_layout()
-        st.pyplot(fig, use_container_width=True)
+        st.pyplot(fig, width='content')
         plt.close()
 
     # Residuals analysis
@@ -822,7 +822,7 @@ def six(X_scaled: np.ndarray, y: pd.Series, feature_cols: list, encoded_cols: li
         ax.spines[['top', 'right']].set_visible(False)
         ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        st.pyplot(fig, use_container_width=True)
+        st.pyplot(fig, width='content')
         plt.close()
 
         st.caption("💡 Un bon modèle devrait avoir des résidus répartis uniformément autour de 0.")
@@ -835,7 +835,7 @@ def six(X_scaled: np.ndarray, y: pd.Series, feature_cols: list, encoded_cols: li
         ax.spines[['top', 'right']].set_visible(False)
         ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        st.pyplot(fig, use_container_width=True)
+        st.pyplot(fig, width='content')
         plt.close()
 
         st.caption("💡 Si les points suivent la ligne rouge, les résidus sont normalement distribués.")
@@ -880,7 +880,7 @@ def six(X_scaled: np.ndarray, y: pd.Series, feature_cols: list, encoded_cols: li
     ax.spines[['top', 'right']].set_visible(False)
     ax.grid(True, alpha=0.3, axis='x')
     plt.tight_layout()
-    st.pyplot(fig, use_container_width=True)
+    st.pyplot(fig, width='content')
     plt.close()
 
     # Coefficients table
@@ -893,7 +893,7 @@ def six(X_scaled: np.ndarray, y: pd.Series, feature_cols: list, encoded_cols: li
         st.dataframe(
             coef_display,
             hide_index=True,
-            use_container_width=True,
+            width='content',
             height=400
         )
 
