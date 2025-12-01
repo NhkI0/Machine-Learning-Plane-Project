@@ -1,13 +1,30 @@
 import time
 from io import StringIO
 
+import numpy as np
+import pandas
 import streamlit as st
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
+from sklearn.preprocessing import StandardScaler
+from scipy import stats
 
 import process_CSV
+
+# ============================================
+# FIX: Matplotlib configuration for proper sizing
+# ============================================
+matplotlib.rcParams['figure.dpi'] = 100
+matplotlib.rcParams['savefig.dpi'] = 100
+matplotlib.rcParams['figure.autolayout'] = True
+matplotlib.rcParams['axes.titlesize'] = 14
+matplotlib.rcParams['axes.labelsize'] = 12
 
 # Charger le set de donnée en global
 data_path = os.path.join("./plane_ticket_price_original.csv")
@@ -77,6 +94,7 @@ def two():
     st.dataframe(df.describe())
 
 
+# FIX: Removed @st.fragment decorator
 def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame = None) -> pd.DataFrame | None:
     # Show comparison summary if viewing cleaned data
     if clean and original_df is not None:
@@ -130,6 +148,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
                 )
 
         st.divider()
+
     # === VALEURS MANQUANTES ===
     st.subheader(":mag: Valeurs manquantes", divider=get_next_color())
 
@@ -174,7 +193,8 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         plt.xticks(rotation=45, ha='right')
         plt.tight_layout()
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
+        plt.close()
     else:
         st.success(":white_check_mark: Aucune valeur manquante détectée dans le dataset")
 
@@ -271,7 +291,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
 
     # === Colonne 1: Boxplot ===
     with col1:
-        fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots(figsize=(10, 6))
         fig.patch.set_facecolor('white')
 
         ax.boxplot(data_df['Price'], vert=True, patch_artist=True,
@@ -290,12 +310,12 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
         ax.grid(axis='y', alpha=0.3, linestyle='--')
 
         plt.tight_layout()
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
         plt.close()
 
     # === Colonne 2: Histogramme ===
     with col2:
-        fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots(figsize=(10, 6))
         fig.patch.set_facecolor('white')
 
         n, bins, patches = ax.hist(data_df['Price'], bins=50, edgecolor='white', linewidth=0.5, alpha=0.9)
@@ -310,10 +330,10 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
 
         ax.axvline(x=lower_bound, color='#ff9800', linestyle='--', linewidth=2, label='Limite inférieure', alpha=0.8)
         ax.axvline(x=upper_bound, color='#ff9800', linestyle='--', linewidth=2, label='Limite supérieure', alpha=0.8)
-        ax.axvline(df['Price'].mean(), color='red', linestyle='--', linewidth=2,
-                   label=f'Moyenne: {df["Price"].mean():.0f}')
-        ax.axvline(df['Price'].median(), color='green', linestyle='--', linewidth=2,
-                   label=f'Médiane: {df["Price"].median():.0f}')
+        ax.axvline(data_df['Price'].mean(), color='red', linestyle='--', linewidth=2,
+                   label=f'Moyenne: {data_df["Price"].mean():.0f}')
+        ax.axvline(data_df['Price'].median(), color='green', linestyle='--', linewidth=2,
+                   label=f'Médiane: {data_df["Price"].median():.0f}')
 
         ax.set_title('Distribution des Prix', fontsize=14, fontweight='bold', pad=15)
         ax.set_xlabel('Prix (₹)', fontsize=11)
@@ -323,7 +343,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
         ax.grid(axis='y', alpha=0.3, linestyle='--')
 
         plt.tight_layout()
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
         plt.close()
 
     if n_outliers > 0:
@@ -331,7 +351,7 @@ def three(data_df: pd.DataFrame, clean: bool = False, original_df: pd.DataFrame 
             st.dataframe(outliers)
 
 
-# noinspection DuplicatedCode
+# FIX: Removed @st.fragment decorator
 def four(data_df: pd.DataFrame):
     st.write("## 4. Distribution des prix selon différents critères")
     st.subheader(":seat: Compagnies :", divider=get_next_color())
@@ -362,7 +382,7 @@ def four(data_df: pd.DataFrame):
     plt.xticks(rotation=45, ha='right', fontsize=10)
 
     plt.tight_layout()
-    st.pyplot(fig)
+    st.pyplot(fig, use_container_width=True)
     plt.close()
 
     stats = data_df.groupby('Airline')['Price'].describe().round(2)
@@ -403,7 +423,7 @@ def four(data_df: pd.DataFrame):
         m1.metric("Moins chère", source_stats['median'].idxmin())
         m2.metric("Plus chère", source_stats['median'].idxmax())
 
-        fig, ax = plt.subplots(figsize=(8, 5))
+        fig, ax = plt.subplots(figsize=(10, 6))
         source_order = source_stats['median'].sort_values().index
         sns.boxplot(data=data_df, x='Source', y='Price', order=source_order, palette='Set3', ax=ax)
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
@@ -414,7 +434,7 @@ def four(data_df: pd.DataFrame):
         ax.yaxis.grid(True, alpha=0.3)
         ax.set_axisbelow(True)
         plt.tight_layout()
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
         plt.close()
 
         source_stats_display = source_stats.rename(columns={
@@ -440,7 +460,7 @@ def four(data_df: pd.DataFrame):
         m1.metric("Moins chère", dest_stats['median'].idxmin())
         m2.metric("Plus chère", dest_stats['median'].idxmax())
 
-        fig, ax = plt.subplots(figsize=(8, 5))
+        fig, ax = plt.subplots(figsize=(10, 6))
         dest_order = dest_stats['median'].sort_values().index
         sns.boxplot(data=data_df, x='Destination', y='Price', order=dest_order, palette='Set3', ax=ax)
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
@@ -451,7 +471,7 @@ def four(data_df: pd.DataFrame):
         ax.yaxis.grid(True, alpha=0.3)
         ax.set_axisbelow(True)
         plt.tight_layout()
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
         plt.close()
 
         dest_stats_display = dest_stats.rename(columns={
@@ -486,7 +506,7 @@ def four(data_df: pd.DataFrame):
     ax.yaxis.grid(True, alpha=0.3)
     ax.set_axisbelow(True)
     plt.tight_layout()
-    st.pyplot(fig)
+    st.pyplot(fig, use_container_width=True)
     plt.close()
 
     # Rename and display
@@ -503,6 +523,379 @@ def four(data_df: pd.DataFrame):
         use_container_width=True,
         height=(len(stops_stats_display) + 1) * 35 + 2
     )
+
+    st.subheader(":clock1: Durée du vol :", divider=get_next_color())
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("##### Relation durée vs prix")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.scatter(data_df['Duration'], data_df['Price'], alpha=0.3, s=10, c='#1c83e1')
+        ax.set_title("Relation entre la durée du vol et le prix", fontsize=14, fontweight='bold', pad=15)
+        ax.set_xlabel("Durée du vol (minutes)", fontsize=11)
+        ax.set_ylabel("Prix (INR)", fontsize=11, color='#555')
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+        st.pyplot(fig, use_container_width=True)
+        plt.close()
+
+    with col2:
+        st.markdown("##### Statistiques de durée")
+        duration_stats = data_df.groupby(pd.cut(data_df['Duration'], bins=5))['Price'].agg(
+            ['count', 'mean', 'median']).round(2)
+        duration_stats.columns = ['Nb vols', 'Prix moyen', 'Prix médian']
+        st.dataframe(
+            duration_stats.style.background_gradient(cmap='Blues', subset=['Prix moyen']).format('{:,.0f}'),
+            use_container_width=True
+        )
+
+        # Correlation
+        correlation = data_df['Duration'].corr(data_df['Price'])
+        st.metric("Corrélation Durée-Prix", f"{correlation:.3f}")
+
+
+def five(data_df: pandas.DataFrame):
+    st.write("## 5. Préparation des données pour la modélisation")
+
+    # Encoder les variables catégorielles avec One-Hot Encoding
+    df_model = pd.get_dummies(data_df, columns=['Airline', 'Source', 'Destination', 'Additional_Info'], drop_first=True)
+
+    # Définition des features (X) et de la cible (y)
+    feature_cols = ['Duration', 'Total_Stops', 'Journey_day', 'Journey_month', 'Departure_hour']
+    encoded_cols = [col for col in df_model.columns if
+                    col.startswith(('Airline_', 'Source_', 'Destination_', 'Additional_Info_'))]
+
+    X = df_model[feature_cols + encoded_cols]
+    y = df_model['Price']
+
+    st.subheader(":gear: Configuration du modèle", divider=get_next_color())
+
+    # Metrics row
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Nombre de features", X.shape[1])
+    col2.metric("Nombre d'observations", f"{X.shape[0]:,}")
+    col3.metric("Variable cible", "Price")
+
+    st.divider()
+
+    # Features breakdown
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("##### :1234: Features numériques")
+        num_features = pd.DataFrame({
+            'Feature': feature_cols,
+            'Type': ['Durée (min)', 'Nombre d\'escales', 'Jour', 'Mois', 'Heure'],
+            'Description': [
+                'Durée totale du vol',
+                'Nombre d\'arrêts intermédiaires',
+                'Jour du départ',
+                'Mois du départ',
+                'Heure de départ'
+            ]
+        })
+        st.dataframe(num_features, hide_index=True, use_container_width=True)
+
+    with col2:
+        st.markdown("##### :abc: Features catégorielles (One-Hot)")
+
+        # Count encoded columns by category
+        cat_summary = pd.DataFrame({
+            'Catégorie': ['Airline', 'Source', 'Destination', 'Additional_Info'],
+            'Colonnes créées': [
+                len([c for c in encoded_cols if c.startswith('Airline_')]),
+                len([c for c in encoded_cols if c.startswith('Source_')]),
+                len([c for c in encoded_cols if c.startswith('Destination_')]),
+                len([c for c in encoded_cols if c.startswith('Additional_Info_')])
+            ]
+        })
+        cat_summary['% du total'] = (cat_summary['Colonnes créées'] / len(encoded_cols) * 100).round(1)
+        st.dataframe(cat_summary, hide_index=True, use_container_width=True)
+
+    # Expander with full feature list
+    with st.expander(f":mag: Voir toutes les {len(encoded_cols)} features encodées"):
+        # Group by category
+        tabs = st.tabs(["Airline", "Source", "Destination", "Additional_Info"])
+
+        for i, prefix in enumerate(['Airline_', 'Source_', 'Destination_', 'Additional_Info_']):
+            with tabs[i]:
+                cols = [c.replace(prefix, '') for c in encoded_cols if c.startswith(prefix)]
+                st.write(", ".join(cols))
+
+    # Data shape summary card
+    st.info(f"""
+    **Résumé de la préparation:**
+    - **X** (features): `{X.shape[0]:,}` lignes × `{X.shape[1]}` colonnes
+    - **y** (cible): `{y.shape[0]:,}` valeurs (Prix en INR)
+    - **Encodage**: One-Hot avec `drop_first=True` pour éviter la multicolinéarité
+    """)
+
+    st.subheader(":zero::one: Normalisation des données", divider=get_next_color())
+
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Méthode", "StandardScaler")
+    col2.metric("Forme de X_scaled", f"{X_scaled.shape[0]:,} × {X_scaled.shape[1]}")
+    col3.metric("Statut", "✓ Normalisé")
+
+    # Show before/after comparison
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("##### Avant normalisation")
+        before_stats = pd.DataFrame({
+            'Métrique': ['Moyenne', 'Écart-type', 'Min', 'Max'],
+            'Valeur': [
+                f"{X.mean().mean():.2f}",
+                f"{X.std().mean():.2f}",
+                f"{X.min().min():.2f}",
+                f"{X.max().max():.2f}"
+            ]
+        })
+        st.dataframe(before_stats, hide_index=True, use_container_width=True)
+
+    with col2:
+        st.markdown("##### Après normalisation")
+        after_stats = pd.DataFrame({
+            'Métrique': ['Moyenne', 'Écart-type', 'Min', 'Max'],
+            'Valeur': [
+                f"{X_scaled.mean():.4f} ≈ 0",
+                f"{X_scaled.std():.4f} ≈ 1",
+                f"{X_scaled.min():.2f}",
+                f"{X_scaled.max():.2f}"
+            ]
+        })
+        st.dataframe(after_stats, hide_index=True, use_container_width=True)
+
+    st.success("""
+    **StandardScaler** transforme chaque feature pour avoir:
+    - **Moyenne = 0** (centrage)
+    - **Écart-type = 1** (réduction)
+
+    Formule: `z = (x - μ) / σ`
+    """)
+    return X_scaled, y, feature_cols, encoded_cols
+
+
+def six(X_scaled: np.ndarray, y: pd.Series, feature_cols: list, encoded_cols: list):
+    st.write("## 6. Modélisation - Régression Linéaire")
+
+    st.subheader(":scissors: Division des données", divider=get_next_color())
+
+    # Division des données
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Ensemble d'entraînement", f"{X_train.shape[0]:,}", "80%", delta_color="off")
+    col2.metric("Ensemble de test", f"{X_test.shape[0]:,}", "20%", delta_color="off")
+    col3.metric("Random state", "42", "reproductible", delta_color="off")
+
+    # Visual split bar
+    train_pct = X_train.shape[0] / (X_train.shape[0] + X_test.shape[0])
+    col1, col2 = st.columns([int(train_pct * 100), int((1 - train_pct) * 100)])
+    with col1:
+        st.markdown(
+            f'<div style="background: #1c83e1; padding: 10px; border-radius: '
+            f'5px 0 0 5px; text-align: center; color: white;">Train: {X_train.shape[0]:,}</div>',
+            unsafe_allow_html=True
+        )
+    with col2:
+        st.markdown(
+            f'<div style="background: #ff9800; padding: 10px; border-radius: '
+            f'0 5px 5px 0; text-align: center; color: white;">Test: {X_test.shape[0]:,}</div>',
+            unsafe_allow_html=True
+        )
+
+    st.divider()
+
+    st.subheader(":robot_face: Entraînement du modèle", divider=get_next_color())
+
+    # Entraînement avec spinner
+    with st.spinner("Entraînement du modèle en cours..."):
+        model = LinearRegression()
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+
+    st.success("✓ Modèle entraîné avec succès!")
+
+    # Évaluation
+    mae = mean_absolute_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+
+    st.subheader(":chart_with_upwards_trend: Résultats", divider=get_next_color())
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("R² Score", f"{r2:.4f}", f"{r2 * 100:.1f}% de variance expliquée", delta_color="off")
+    col2.metric("MAE", f"₹{mae:,.0f}", "Erreur absolue moyenne", delta_color="off")
+    col3.metric("RMSE", f"₹{rmse:,.0f}", "Erreur quadratique moyenne", delta_color="off")
+
+    # Interpretation card
+    if r2 >= 0.8:
+        st.success(f"""
+        **Interprétation des résultats:**
+        - Le modèle explique **{r2 * 100:.1f}%** de la variance des prix ✓ Excellent
+        - En moyenne, les prédictions sont à **±{mae:,.0f} INR** du prix réel
+        """)
+    elif r2 >= 0.6:
+        st.info(f"""
+        **Interprétation des résultats:**
+        - Le modèle explique **{r2 * 100:.1f}%** de la variance des prix — Correct
+        - En moyenne, les prédictions sont à **±{mae:,.0f} INR** du prix réel
+        """)
+    else:
+        st.warning(f"""
+        **Interprétation des résultats:**
+        - Le modèle explique **{r2 * 100:.1f}%** de la variance des prix — À améliorer
+        - En moyenne, les prédictions sont à **±{mae:,.0f} INR** du prix réel
+        """)
+
+    # Predictions vs Real
+    st.subheader(":dart: Analyse des prédictions", divider=get_next_color())
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("##### Prédictions vs Valeurs réelles")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.scatter(y_test, y_pred, alpha=0.3, s=10, c='#1c83e1')
+
+        # Perfect prediction line
+        max_val = max(y_test.max(), y_pred.max())
+        min_val = min(y_test.min(), y_pred.min())
+        ax.plot([min_val, max_val], [min_val, max_val], 'r--', lw=2, label='Prédiction parfaite')
+
+        ax.set_xlabel('Prix réel (INR)', fontsize=11)
+        ax.set_ylabel('Prix prédit (INR)', fontsize=11)
+        ax.legend()
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+        st.pyplot(fig, use_container_width=True)
+        plt.close()
+
+    with col2:
+        st.markdown("##### Distribution des erreurs (résidus)")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        residuals = y_test - y_pred
+        sns.histplot(residuals, kde=True, ax=ax, color='#1c83e1', edgecolor='white', alpha=0.8)
+        ax.axvline(x=0, color='red', linestyle='--', lw=2, label='Erreur = 0')
+        ax.axvline(x=residuals.mean(), color='green', linestyle='--', lw=2, label=f'Moyenne: {residuals.mean():.0f}')
+
+        ax.set_xlabel('Erreur (Prix réel - Prix prédit)', fontsize=11)
+        ax.set_ylabel('Fréquence', fontsize=11)
+        ax.set_title("Distribution des erreurs (résidus)", fontsize=14, fontweight='bold', pad=15)
+        ax.legend()
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.grid(True, alpha=0.3, axis='y')
+        plt.tight_layout()
+        st.pyplot(fig, use_container_width=True)
+        plt.close()
+
+    # Residuals analysis
+    st.subheader(":mag: Analyse des résidus", divider=get_next_color())
+
+    residuals = y_test - y_pred
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Moyenne des résidus", f"₹{residuals.mean():,.0f}")
+    col2.metric("Écart-type", f"₹{residuals.std():,.0f}")
+    col3.metric("Min", f"₹{residuals.min():,.0f}")
+    col4.metric("Max", f"₹{residuals.max():,.0f}")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("##### Résidus vs Valeurs prédites")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.scatter(y_pred, residuals, alpha=0.3, s=10, c='#1c83e1')
+        ax.axhline(0, color='red', linestyle='--', lw=2, label='Résidu = 0')
+
+        ax.set_xlabel('Prix prédit (INR)', fontsize=11)
+        ax.set_ylabel('Résidu (INR)', fontsize=11)
+        ax.set_title("Résidus vs Valeurs prédites", fontsize=14, fontweight='bold', pad=15)
+        ax.legend()
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+        st.pyplot(fig, use_container_width=True)
+        plt.close()
+
+        st.caption("💡 Un bon modèle devrait avoir des résidus répartis uniformément autour de 0.")
+
+    with col2:
+        st.markdown("##### Q-Q Plot des résidus")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        stats.probplot(residuals, dist="norm", plot=ax)
+        ax.set_title("Q-Q Plot (Normalité des résidus)", fontsize=14, fontweight='bold', pad=15)
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+        st.pyplot(fig, use_container_width=True)
+        plt.close()
+
+        st.caption("💡 Si les points suivent la ligne rouge, les résidus sont normalement distribués.")
+
+    # Coefficients analysis
+    st.subheader(":bar_chart: Poids des variables", divider=get_next_color())
+
+    feature_names = feature_cols + encoded_cols
+    coef_df = pd.DataFrame({
+        'Variable': feature_names,
+        'Coefficient': model.coef_
+    }).sort_values('Coefficient', ascending=True)
+
+    # Top positive and negative
+    col1, col2 = st.columns(2)
+    with col1:
+        top_positive = coef_df.nlargest(3, 'Coefficient')
+        st.markdown("**🔺 Variables augmentant le prix:**")
+        for _, row in top_positive.iterrows():
+            st.write(f"- **{row['Variable']}**: +{row['Coefficient']:.2f}")
+
+    with col2:
+        top_negative = coef_df.nsmallest(3, 'Coefficient')
+        st.markdown("**🔻 Variables diminuant le prix:**")
+        for _, row in top_negative.iterrows():
+            st.write(f"- **{row['Variable']}**: {row['Coefficient']:.2f}")
+
+    # Full coefficients plot
+    st.markdown("##### Tous les coefficients de la régression")
+
+    # Calculate appropriate height based on number of features
+    num_features = len(coef_df)
+    fig_height = max(10, int(num_features * 0.4))
+
+    fig, ax = plt.subplots(figsize=(12, fig_height))
+    colors = ['#1c83e1' if c >= 0 else '#ff5252' for c in coef_df['Coefficient']]
+    ax.barh(coef_df['Variable'], coef_df['Coefficient'], color=colors)
+    ax.axvline(x=0, color='black', linewidth=0.8)
+    ax.set_xlabel('Coefficient', fontsize=11)
+    ax.set_ylabel('')
+    ax.set_title("Poids des variables dans la régression linéaire", fontsize=14, fontweight='bold', pad=15)
+    ax.spines[['top', 'right']].set_visible(False)
+    ax.grid(True, alpha=0.3, axis='x')
+    plt.tight_layout()
+    st.pyplot(fig, use_container_width=True)
+    plt.close()
+
+    # Coefficients table
+    with st.expander(":page_facing_up: Voir le tableau complet des coefficients"):
+        coef_display = coef_df.sort_values('Coefficient', key=abs, ascending=False).reset_index(drop=True)
+        coef_display['Coefficient'] = coef_display['Coefficient'].round(4)
+        coef_display['Impact'] = coef_display['Coefficient'].apply(
+            lambda x: '🔺 Augmente' if x > 0 else '🔻 Diminue'
+        )
+        st.dataframe(
+            coef_display,
+            hide_index=True,
+            use_container_width=True,
+            height=400
+        )
 
 
 def run():
@@ -578,6 +971,14 @@ def run():
     st.divider()
 
     four(cleaned_df)
+
+    st.divider()
+
+    X_scaled, y, feature_cols, encoded_cols = five(cleaned_df)
+
+    st.divider()
+
+    six(X_scaled, y, feature_cols, encoded_cols)
 
 
 if __name__ == "__main__":
